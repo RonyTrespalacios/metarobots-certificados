@@ -75,7 +75,7 @@ def generar_certificado(documento, tipo_documento):
                  "ginvestigacioneysi@unillanos.edu.co con Asunto: Solicitud Certificado de Participación "
                  "e incluye tu nombre completo, número de documento y categorías en las que participaste.")
 
-st.title("📜 Plataforma de Certificados y Administración")
+st.title("📜 Plataforma de Certificados METAROBOTS 2024")
 
 # Función para buscar y generar el certificado
 def buscar_y_generar_certificado(documento, tipo_documento):
@@ -102,6 +102,37 @@ def autenticar_usuario(username, password):
 # Estado de autenticación
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
+
+# Función para generar certificados personalizados
+def generar_certificado_personalizado(nombre, tipo_documento, calidad):
+    # Procesar los datos de entrada
+    nombre_mayus = nombre.strip().upper()
+    tipo_documento_texto = f"{tipo_documento} Número {nombre_mayus}"
+    calidad_format = calidad.strip().capitalize()
+    
+    # Formatear la fecha en español usando la función personalizada
+    fecha_texto = obtener_fecha_en_espanol()
+
+    # Campos a rellenar en el PDF
+    fields = {
+        "NOMBRE_PARTICIPANTE": nombre_mayus,
+        "DOCUMENTO": tipo_documento_texto,
+        "CALIDAD": calidad_format,
+        "FECHA": fecha_texto,
+    }
+    
+    # Rellenar y aplanar el PDF en memoria
+    pdf_bytes = BytesIO()
+    fillpdfs.write_fillable_pdf(template_pdf_path, pdf_bytes, fields, flatten=True)
+    pdf_bytes.seek(0)  # Volver al inicio del archivo en memoria
+
+    # Descargar el PDF personalizado
+    st.download_button(
+        label="📄 Descargar Certificado Personalizado",
+        data=pdf_bytes,
+        file_name=f"{nombre_mayus}_Certificado_Personalizado.pdf",
+        mime="application/pdf"
+    )
 
 # Pestañas iniciales para autenticación y descarga de certificados
 tab1, tab2 = st.tabs(["Descargar Certificado 📄", "Iniciar Sesión 🔒"])
@@ -132,15 +163,18 @@ with tab2:
     elif st.session_state["authenticated"]:
         # Pestañas de administración de documentos
         st.subheader("Administración de Documentos 📂")
-        tab1, tab2, tab3, tab4 = st.tabs(["Agregar Documento ➕", "Modificar Documento ✏️", "Eliminar Documento ❌", "Ver Documentos 📊"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+            "Agregar Documento ➕", "Modificar Documento ✏️", "Eliminar Documento ❌", 
+            "Ver Documentos 📊", "Generar Certificado Personalizado 🎖️"
+        ])
 
         # Agregar documentos
         with tab1:
             st.subheader("Agregar Documento 📝")
-            documento = st.text_input("Documento")
-            nombre = st.text_input("Nombre")
-            calidad = st.text_input("Calidad")
-            categoria = st.text_input("Categoria")
+            documento = st.text_input("Documento", key="add_documento")
+            nombre = st.text_input("Nombre", key="add_nombre")
+            calidad = st.text_input("Calidad", key="add_calidad")
+            categoria = st.text_input("Categoria", key="add_categoria")
 
             if st.button("Agregar ✅"):
                 cursor.execute("INSERT INTO documentos (documento, nombre, calidad, categoria) VALUES (?, ?, ?, ?)",
@@ -205,6 +239,19 @@ with tab2:
 
             st.write("Resultados:")
             st.dataframe(df)
+
+        # Generar certificado personalizado
+        with tab5:
+            st.subheader("Generar Certificado Personalizado 🎖️")
+            nombre = st.text_input("Nombre del Participante", key="cert_nombre")
+            tipo_documento = st.selectbox("Tipo de Documento", ["Cedula de Ciudadania", "Tarjeta de Identidad"], key="cert_tipo_documento")
+            calidad = st.text_input("Calidad", key="cert_calidad")
+
+            if st.button("Generar Certificado Personalizado 🖨️"):
+                if nombre and tipo_documento and calidad:
+                    generar_certificado_personalizado(nombre, tipo_documento, calidad)
+                else:
+                    st.error("Por favor, complete todos los campos necesarios. ⚠️")
 
         # Cerrar sesión
         if st.button("Cerrar sesión 🔓"):

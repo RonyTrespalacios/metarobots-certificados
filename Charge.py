@@ -14,13 +14,17 @@ expected_columns = {'Documento', 'Nombre', 'Calidad', 'Categoria'}
 if set(df.columns) != expected_columns:
     raise ValueError("Las columnas del archivo no coinciden con las esperadas: Documento, Nombre, Calidad, Categoria")
 
-# Insertar cada fila en la tabla
+# Insertar o actualizar cada fila en la tabla
 for _, row in df.iterrows():
     cursor.execute("""
-    INSERT OR IGNORE INTO documentos (documento, nombre, calidad, categoria)
+    INSERT INTO documentos (documento, nombre, calidad, categoria)
     VALUES (?, ?, ?, ?)
+    ON CONFLICT(documento) DO UPDATE SET
+        nombre=excluded.nombre,
+        calidad=excluded.calidad,
+        categoria=excluded.categoria
     """, (row['Documento'], row['Nombre'], row['Calidad'], row['Categoria']))
 
 conn.commit()
 conn.close()
-print("Datos cargados exitosamente en la tabla.")
+print("Datos actualizados y cargados exitosamente en la tabla.")
