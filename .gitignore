@@ -1,0 +1,10 @@
+# Ignorar el archivo .env con las credenciales
+.env
+
+# Ignorar el entorno virtual de Python
+.venv/
+__pycache__/
+*.pyc
+
+# informacion de participantes
+my_data.xlsx
