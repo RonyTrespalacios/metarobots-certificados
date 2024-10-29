@@ -104,10 +104,10 @@ if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
 # Función para generar certificados personalizados
-def generar_certificado_personalizado(nombre, tipo_documento, calidad):
+def generar_certificado_personalizado(nombre, tipo_documento, documento, calidad):
     # Procesar los datos de entrada
     nombre_mayus = nombre.strip().upper()
-    tipo_documento_texto = f"{tipo_documento} Número {nombre_mayus}"
+    tipo_documento_texto = f"{tipo_documento} Número {documento}"
     calidad_format = calidad.strip().capitalize()
     
     # Formatear la fecha en español usando la función personalizada
@@ -245,11 +245,12 @@ with tab2:
             st.subheader("Generar Certificado Personalizado 🎖️")
             nombre = st.text_input("Nombre del Participante", key="cert_nombre")
             tipo_documento = st.selectbox("Tipo de Documento", ["Cedula de Ciudadania", "Tarjeta de Identidad"], key="cert_tipo_documento")
+            numero_documento = st.text_input("Número de Documento", key="cert_numero_documento")  # Nuevo campo para el número
             calidad = st.text_input("Calidad", key="cert_calidad")
 
             if st.button("Generar Certificado Personalizado 🖨️"):
-                if nombre and tipo_documento and calidad:
-                    generar_certificado_personalizado(nombre, tipo_documento, calidad)
+                if nombre and tipo_documento and numero_documento and calidad:
+                    generar_certificado_personalizado(nombre, tipo_documento, numero_documento, calidad)
                 else:
                     st.error("Por favor, complete todos los campos necesarios. ⚠️")
 
