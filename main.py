@@ -151,7 +151,7 @@ def generar_certificado_logistica(documento):
         fields = {
             "NOMBRE_PARTICIPANTE": nombre_completo.upper(),
             "DOCUMENTO": tipo_documento_texto,
-            "CALIDAD": "Miembro del Comité Organizador",
+            "CALIDAD": "Comité Organizador",
             "FECHA": fecha_texto,
         }
         
