@@ -134,8 +134,44 @@ def generar_certificado_personalizado(nombre, tipo_documento, documento, calidad
         mime="application/pdf"
     )
 
-# Pestañas iniciales para autenticación y descarga de certificados
-tab1, tab2 = st.tabs(["Descargar Certificado 📄", "Iniciar Sesión 🔒"])
+# Función para generar el certificado desde la tabla comite_organizador
+def generar_certificado_logistica(documento):
+    cursor.execute("SELECT nombre_completo FROM comite_organizador WHERE documento = ?", (documento,))
+    result = cursor.fetchone()
+    
+    if result:
+        nombre_completo = result[0]
+        tipo_documento = "Cedula de Ciudadania"  # Tipo de documento por defecto
+        tipo_documento_texto = f"{tipo_documento} Número {documento}"
+        
+        # Formatear la fecha en español
+        fecha_texto = obtener_fecha_en_espanol()
+
+        # Campos a rellenar en el PDF
+        fields = {
+            "NOMBRE_PARTICIPANTE": nombre_completo.upper(),
+            "DOCUMENTO": tipo_documento_texto,
+            "CALIDAD": "Miembro del Comité Organizador",
+            "FECHA": fecha_texto,
+        }
+        
+        # Rellenar y aplanar el PDF en memoria
+        pdf_bytes = BytesIO()
+        fillpdfs.write_fillable_pdf(template_pdf_path, pdf_bytes, fields, flatten=True)
+        pdf_bytes.seek(0)  # Volver al inicio del archivo en memoria
+
+        # Descargar el PDF aplanado
+        st.download_button(
+            label="📄 Descargar Certificado Logística",
+            data=pdf_bytes,
+            file_name=f"{nombre_completo}_Certificado_Logistica.pdf",
+            mime="application/pdf"
+        )
+    else:
+        st.error("No encontramos tu documento en la base de datos del comité organizador. 📧 Contacta con soporte.")
+
+# Pestañas iniciales para descarga de certificados, iniciar sesión y logística
+tab1, tab2, tab3 = st.tabs(["Descargar Certificado 📄", "Iniciar Sesión 🔒", "Logística 📋"])
 
 with tab1:
     st.subheader("Descargar Certificado de Participación 📑")
@@ -257,6 +293,18 @@ with tab2:
         # Cerrar sesión
         if st.button("Cerrar sesión 🔓"):
             st.session_state["authenticated"] = False
+
+# Tab "Logística"
+with tab3:
+    st.subheader("Certificado Comité Organizador (Logística) 📋")
+    documento = st.text_input("Ingrese su Número de Documento", key="logistica_documento")
+
+    if st.button("Generar Certificado Logística 🖨️"):
+        if documento:
+            # Llamar a la función que genera el certificado usando la tabla `comite_organizador`
+            generar_certificado_logistica(documento)
+        else:
+            st.error("Por favor, ingrese un número de documento. ⚠️")
 
 # Agregar imagen centrada al final del tab
 st.markdown('''
