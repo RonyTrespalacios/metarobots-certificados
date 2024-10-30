@@ -171,7 +171,7 @@ def generar_certificado_logistica(documento):
         st.error("No encontramos tu documento en la base de datos del comité organizador. 📧 Contacta con soporte.")
 
 # Pestañas iniciales para descarga de certificados, iniciar sesión y logística
-tab1, tab2, tab3 = st.tabs(["Descargar Certificado 📄", "Iniciar Sesión 🔒", "Logística 📋"])
+tab1, tab2, tab3 = st.tabs(["Descargar Certificado 📄", "Logística 📋", "Iniciar Sesión 🔒"])
 
 with tab1:
     st.subheader("Descargar Certificado de Participación 📑")
@@ -184,7 +184,19 @@ with tab1:
         else:
             st.error("Por favor, ingrese un número de documento. ⚠️")
 
+# Tab "Logística"
 with tab2:
+    st.subheader("Certificado Comité Organizador (Logística) 📋")
+    documento = st.text_input("Ingrese su Número de Documento", key="logistica_documento")
+
+    if st.button("Generar Certificado Logística 🖨️"):
+        if documento:
+            # Llamar a la función que genera el certificado usando la tabla `comite_organizador`
+            generar_certificado_logistica(documento)
+        else:
+            st.error("Por favor, ingrese un número de documento. ⚠️")
+
+with tab3:
     st.subheader("Iniciar Sesión 🔑")
     if not st.session_state["authenticated"]:
         username = st.text_input("Usuario")
@@ -293,18 +305,6 @@ with tab2:
         # Cerrar sesión
         if st.button("Cerrar sesión 🔓"):
             st.session_state["authenticated"] = False
-
-# Tab "Logística"
-with tab3:
-    st.subheader("Certificado Comité Organizador (Logística) 📋")
-    documento = st.text_input("Ingrese su Número de Documento", key="logistica_documento")
-
-    if st.button("Generar Certificado Logística 🖨️"):
-        if documento:
-            # Llamar a la función que genera el certificado usando la tabla `comite_organizador`
-            generar_certificado_logistica(documento)
-        else:
-            st.error("Por favor, ingrese un número de documento. ⚠️")
 
 # Agregar imagen centrada al final del tab
 st.markdown('''
